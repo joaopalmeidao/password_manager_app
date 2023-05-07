@@ -19,7 +19,6 @@ def login_post():
 	if request.method == "POST":
 		# Get values from Form
 		email = request.form.get("email")
-		name = request.form.get("name")
 		password = request.form.get("password")
 		remember = request.form.get("remember")
 
