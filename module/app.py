@@ -6,6 +6,7 @@ import pandas as pd
 from datetime import datetime
 import os
 from module import PATH_DIRETORIO,PATH_ARQUIVOS
+from auth import auth,generate_password_hash
 
 
 app = Flask(__name__)
@@ -19,28 +20,27 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
     
-    # USERS = [
-    #     PasswordManager(email='admin@jpsoftwaresco.com.br',site_url='www.jpsoftwaresco.com.br',site_password='admin'),
-    #     PasswordManager(email='guest@jpsoftwaresco.com.br',site_url='www.jpsoftwaresco.com.br',site_password='guest')
-    # ]
-    # for U in USERS:
-    #     db.session.add(U)
-    # db.session.commit()
+    users = User.query.all()
     
-    # users = User.query.all()
-    # print(users)
+    if not users:
+        USERS = [
+            User(email='admin@jpsoftwaresco.com.br',username='admin',password=generate_password_hash('admin',method='sha256')),
+        ]
+        for U in USERS:
+            db.session.add(U)
+        db.session.commit()
+    
+    users = User.query.all()
+    print(users)
 
-# For managing sessions during login
 login_manager.init_app(app)
 
 
-from .auth import auth
 app.register_blueprint(auth)
 
 
 @login_manager.user_loader
 def load_user(user_id):
-    # using the user id as primary key as id for session
     return User.query.get(int(user_id))
     
 @app.route("/")
@@ -115,7 +115,7 @@ def export_data():
     df.to_excel(file_path,index=False)
 
     return send_file(file_path,
-        mimetype='text/csv',
+        mimetype='xlsx',
         download_name=file_name,
         as_attachment=True)
 
